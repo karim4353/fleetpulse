@@ -2,7 +2,7 @@
 
 **Elevator pitch:** FleetPulse is a prototype platform demonstrating end-to-end EV fleet telematics: simulator -> streaming ingestion -> timescale storage -> streaming feature pipeline -> offline training (MLflow) -> model serving -> charging optimizer -> dashboard. This repo is a CPU-only prototype for demos and hiring interviews. **No real-world actuation** — optimizer produces recommendations only.
 
-## Architecture (placeholder)
+## Architecture 
 ```
 [Simulator] -> Kafka -> [Ingestion] -> TimescaleDB
                          -> [Feature Processor] -> Feature Tables
