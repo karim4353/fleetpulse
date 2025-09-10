@@ -1,0 +1,4 @@
+faker==18.9.0
+aiokafka==1.4.0
+pyyaml
+requests

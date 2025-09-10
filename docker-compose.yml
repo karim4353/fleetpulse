@@ -1,0 +1,87 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports: ["2181:2181"]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    depends_on: [zookeeper]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    ports: ["29092:29092", "9092:9092"]
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: fleet
+      POSTGRES_DB: fleetpulse
+    ports: ["5432:5432"]
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+
+  mlflow:
+    build: ./services/mlflow
+    ports: ["5000:5000"]
+    volumes:
+      - ./ml:/ml
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./metrics/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:latest
+    ports: ["3000:3000"]
+    volumes:
+      - ./metrics/grafana:/var/lib/grafana
+
+  ingestion:
+    build: ./services/ingestion
+    depends_on: [kafka, timescaledb]
+    ports: ["8000:8000"]
+    environment:
+      DATABASE_URL: postgresql://fleet:example@timescaledb:5432/fleetpulse
+      KAFKA_BOOTSTRAP: kafka:9092
+
+  feature_processor:
+    build: ./services/feature_processor
+    depends_on: [kafka, timescaledb]
+    environment:
+      DATABASE_URL: postgresql://fleet:example@timescaledb:5432/fleetpulse
+      KAFKA_BOOTSTRAP: kafka:9092
+
+  model_server:
+    build: ./services/model_server
+    depends_on: [mlflow]
+    ports: ["8001:8001"]
+    environment:
+      MODEL_PATH: /ml/models/example_model.pkl
+
+  optimizer:
+    build: ./services/optimizer
+    ports: ["8002:8002"]
+
+  producer_simulator:
+    build: ./services/producer_simulator
+    depends_on: [kafka]
+    command: ["python", "simulator.py", "--scenario", "/app/examples/scenario_configs/sample.yaml", "--mode", "stream"]
+
+  frontend:
+    build: ./frontend
+    ports: ["3001:3000"]
+    environment:
+      REACT_APP_API_BASE: http://localhost:8000
+
+volumes:
+  timescale-data:

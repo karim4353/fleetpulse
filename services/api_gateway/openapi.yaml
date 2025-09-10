@@ -1,0 +1,11 @@
+openapi: 3.0.0
+info:
+  title: FleetPulse Gateway
+  version: '0.1'
+paths:
+  /predict/soh:
+    post:
+      summary: Forward to model server
+  /optimize/charging:
+    post:
+      summary: Forward to optimizer

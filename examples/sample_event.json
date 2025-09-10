@@ -1,0 +1,10 @@
+{
+  "vehicle_id": "veh-001",
+  "timestamp": "2025-09-10T00:00:00Z",
+  "soc": 42.5,
+  "soh": 88.1,
+  "lat": 37.77,
+  "lon": -122.41,
+  "speed": 12.3,
+  "temperature_c": 22.1
+}

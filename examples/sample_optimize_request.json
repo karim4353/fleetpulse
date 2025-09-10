@@ -1,0 +1,13 @@
+{
+  "vehicles": [
+    {
+      "vehicle_id": "veh-001",
+      "soc": 42.5,
+      "location": {
+        "lat": 37.77,
+        "lon": -122.41
+      }
+    }
+  ],
+  "charging_points": 2
+}
